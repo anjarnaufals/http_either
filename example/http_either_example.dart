@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_either/http_either.dart';
 
 import 'todo.dart';
@@ -35,6 +36,7 @@ class YourClient {
     bool useAuthentication = false,
   }) async {
     return HttpEither(
+      client: http.Client(),
       baseUrl: baseUrl,
       headers: useAuthentication ? await _authorization() : _constHeader,
     );
@@ -49,7 +51,6 @@ Future<Either<YourError, List<Todo>>> getPostList() async {
           postlistUrl,
           query: query,
           showLog: true,
-          useConsolePrint: true,
         ));
 
     if (data.isLeft) {

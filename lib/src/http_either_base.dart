@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
+import 'package:logger/logger.dart';
 
 part 'api_exception.dart';
 part 'http_common_request.dart';
@@ -14,10 +14,11 @@ part 'http_status_code.dart';
 class HttpEither with HttpCommonRequest {
   HttpEither({
     required this.baseUrl,
-    this.headers,
+    required this.headers,
+    required http.Client client,
   }) {
     _client = RetryClient(
-      http.Client(),
+      client,
     );
   }
 
@@ -52,7 +53,6 @@ class HttpEither with HttpCommonRequest {
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
-    useConsolePrint = false,
   }) {
     final Uri uri = useHttps
         ? Uri.https(baseUrl, url, query)
@@ -65,7 +65,6 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
-      useConsolePrint: useConsolePrint,
     );
   }
 
@@ -154,15 +153,16 @@ class HttpEither with HttpCommonRequest {
     Future<http.Response> future,
     RetryClient client, {
     bool showLog = false,
-    bool useConsolePrint = false,
   }) async {
     try {
       http.Response? response;
       await future.then((res) {
         if (showLog) {
-          log('RESPONSE[${res.statusCode}');
+          print(res.statusCode);
           HttpLogEncoder.prettyLogJson(
             res.body,
+            statusCode: '${res.statusCode}',
+            error: res.statusCode != 200,
           );
         }
 
@@ -180,7 +180,7 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: _internalSeverErrorMap,
+              res: _internalSeverErrorMap,
             ),
           );
 
@@ -189,7 +189,7 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: _notImplementedMap,
+              res: _notImplementedMap,
             ),
           );
 
@@ -198,23 +198,45 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: response?.body ?? _somethingErrorMap,
+              res: jsonDecode(response?.body ?? '') ?? _somethingErrorMap,
             ),
           );
       }
     } on SocketException catch (e) {
+      if (showLog) {
+        HttpLogEncoder.prettyLogJson(
+          e.message,
+          statusCode: 'SOCKET EXCEPTION',
+          error: true,
+        );
+      }
+
       return Left(
         ApiException(
           message: e.message,
         ),
       );
     } on FormatException catch (e) {
+      if (showLog) {
+        HttpLogEncoder.prettyLogJson(
+          e.message,
+          statusCode: 'FORMAT EXCEPTION',
+          error: true,
+        );
+      }
       return Left(
         ApiException(
           message: e.message,
         ),
       );
     } on Exception catch (e, t) {
+      if (showLog) {
+        HttpLogEncoder.prettyLogJson(
+          e.toString(),
+          statusCode: 'EXCEPTION',
+          error: true,
+        );
+      }
       return Left(
         ApiException(
           message:
