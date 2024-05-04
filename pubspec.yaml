@@ -1,10 +1,10 @@
 name: http_either
 description: A starting point for Dart libraries or applications.
-version: 1.0.1
-# repository: https://github.com/my_org/my_repo
+version: 1.0.2
+repository: https://github.com/anjarnaufals/http_either
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.3.4
 
 # Add regular dependencies here.
 dependencies:

@@ -1,3 +1,7 @@
+## 1.0.2
+
+- update sdk minimum version.
+
 ## 1.0.1
 
 - add type to all parameter and become required
