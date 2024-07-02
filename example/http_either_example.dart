@@ -49,7 +49,6 @@ Future<Either<YourError, List<Todo>>> getPostList() async {
           postlistUrl,
           query: query,
           showLog: true,
-          useConsolePrint: true,
         ));
 
     if (data.isLeft) {

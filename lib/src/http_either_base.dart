@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:either_dart/either.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/retry.dart';
+import 'package:logger/logger.dart';
 
 part 'api_exception.dart';
 part 'http_common_request.dart';
@@ -29,11 +29,14 @@ class HttpEither with HttpCommonRequest {
   @override
   Future<Either<ApiException, dynamic>> delete<T>(
     String url, {
+    Map<String, dynamic>? query,
     T? data,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.delete(
@@ -43,6 +46,9 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'DELETE',
+      path: url,
     );
   }
 
@@ -52,7 +58,6 @@ class HttpEither with HttpCommonRequest {
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
-    useConsolePrint = false,
   }) {
     final Uri uri = useHttps
         ? Uri.https(baseUrl, url, query)
@@ -65,13 +70,16 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
-      useConsolePrint: useConsolePrint,
+      query: query,
+      method: 'GET',
+      path: url,
     );
   }
 
   @override
-  Future<Either<ApiException, dynamic>> head(
-    String url, {
+  Future<Either<ApiException, dynamic>> head<T>(
+    String url,
+    T? data, {
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -87,6 +95,10 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'HEAD',
+      path: url,
+      body: data,
     );
   }
 
@@ -94,10 +106,13 @@ class HttpEither with HttpCommonRequest {
   Future<Either<ApiException, dynamic>> patch<T>(
     String url,
     T? data, {
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.patch(
@@ -107,6 +122,10 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'PATCH',
+      body: data,
+      path: url,
     );
   }
 
@@ -114,10 +133,13 @@ class HttpEither with HttpCommonRequest {
   Future<Either<ApiException, dynamic>> post<T>(
     String url,
     T? data, {
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) async {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.post(
@@ -127,17 +149,24 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'POST',
+      path: url,
+      body: data,
     );
   }
 
   @override
   Future<Either<ApiException, dynamic>> put<T>(
-    String url,
-    T? data, {
+    String url, {
+    T? data,
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.put(
@@ -147,6 +176,10 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'PUT',
+      path: url,
+      body: data,
     );
   }
 
@@ -154,15 +187,22 @@ class HttpEither with HttpCommonRequest {
     Future<http.Response> future,
     RetryClient client, {
     bool showLog = false,
-    bool useConsolePrint = false,
+    Map<String, dynamic>? query,
+    String? path,
+    String? method,
+    Object? body,
   }) async {
     try {
       http.Response? response;
       await future.then((res) {
         if (showLog) {
-          log('RESPONSE[${res.statusCode}');
-          HttpLogEncoder.prettyLogJson(
-            res.body,
+          HttpLogEncoder().prettyLogJson(
+            res.statusCode,
+            path,
+            method,
+            res,
+            query,
+            body,
           );
         }
 
