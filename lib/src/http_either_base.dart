@@ -30,11 +30,14 @@ class HttpEither with HttpCommonRequest {
   @override
   Future<Either<ApiException, dynamic>> delete<T>(
     String url, {
+    Map<String, dynamic>? query,
     T? data,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.delete(
@@ -44,6 +47,9 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'DELETE',
+      path: url,
     );
   }
 
@@ -65,12 +71,16 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'GET',
+      path: url,
     );
   }
 
   @override
-  Future<Either<ApiException, dynamic>> head(
+  Future<Either<ApiException, dynamic>> head<T>(
     String url, {
+    T? data,
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -86,17 +96,24 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'HEAD',
+      path: url,
+      body: data,
     );
   }
 
   @override
   Future<Either<ApiException, dynamic>> patch<T>(
-    String url,
-    T? data, {
+    String url, {
+    T? data,
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.patch(
@@ -106,6 +123,10 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'PATCH',
+      body: data,
+      path: url,
     );
   }
 
@@ -113,10 +134,13 @@ class HttpEither with HttpCommonRequest {
   Future<Either<ApiException, dynamic>> post<T>(
     String url,
     T? data, {
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) async {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.post(
@@ -126,17 +150,24 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'POST',
+      path: url,
+      body: data,
     );
   }
 
   @override
   Future<Either<ApiException, dynamic>> put<T>(
-    String url,
-    T? data, {
+    String url, {
+    T? data,
+    Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
   }) {
-    final Uri uri = useHttps ? Uri.https(baseUrl, url) : Uri.http(baseUrl, url);
+    final Uri uri = useHttps
+        ? Uri.https(baseUrl, url, query)
+        : Uri.http(baseUrl, url, query);
 
     return _eitherCallHttp(
       _client.put(
@@ -146,6 +177,10 @@ class HttpEither with HttpCommonRequest {
       ),
       _client,
       showLog: showLog,
+      query: query,
+      method: 'PUT',
+      path: url,
+      body: data,
     );
   }
 
@@ -153,16 +188,22 @@ class HttpEither with HttpCommonRequest {
     Future<http.Response> future,
     RetryClient client, {
     bool showLog = false,
+    Map<String, dynamic>? query,
+    String? path,
+    String? method,
+    Object? body,
   }) async {
     try {
       http.Response? response;
       await future.then((res) {
         if (showLog) {
-          print(res.statusCode);
-          HttpLogEncoder.prettyLogJson(
-            res.body,
-            statusCode: '${res.statusCode}',
-            error: res.statusCode != 200,
+          HttpLogEncoder().prettyLogJson(
+            res.statusCode,
+            path,
+            method,
+            res,
+            query,
+            body,
           );
         }
 
@@ -202,13 +243,9 @@ class HttpEither with HttpCommonRequest {
             ),
           );
       }
-    } on SocketException catch (e) {
+    } on SocketException catch (e, trace) {
       if (showLog) {
-        HttpLogEncoder.prettyLogJson(
-          e.message,
-          statusCode: 'SOCKET EXCEPTION',
-          error: true,
-        );
+        HttpLogEncoder().prettyErrorLog(e.message, trace);
       }
 
       return Left(
@@ -216,31 +253,22 @@ class HttpEither with HttpCommonRequest {
           message: e.message,
         ),
       );
-    } on FormatException catch (e) {
+    } on FormatException catch (e, trace) {
       if (showLog) {
-        HttpLogEncoder.prettyLogJson(
-          e.message,
-          statusCode: 'FORMAT EXCEPTION',
-          error: true,
-        );
+        HttpLogEncoder().prettyErrorLog(e.message, trace);
       }
       return Left(
         ApiException(
           message: e.message,
         ),
       );
-    } on Exception catch (e, t) {
+    } on Exception catch (e, trace) {
       if (showLog) {
-        HttpLogEncoder.prettyLogJson(
-          e.toString(),
-          statusCode: 'EXCEPTION',
-          error: true,
-        );
+        HttpLogEncoder().prettyErrorLog(e.toString(), trace);
       }
       return Left(
         ApiException(
-          message:
-              '<----Exception----> \n ${e.toString()} \n\n <----Trace----> \n ${t.toString()}',
+          message: 'Something Wrong',
         ),
       );
     } finally {

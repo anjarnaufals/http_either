@@ -192,9 +192,9 @@ void main() {
         client: mockHttpResponseSuccess,
       );
 
-      var res = await httpEither.put(
+      var res = await httpEither.put<Map<String, dynamic>>(
         path,
-        uploadedData,
+        data: uploadedData,
         showLog: true,
       );
 
@@ -214,9 +214,9 @@ void main() {
         client: mockHttpResponseFailure,
       );
 
-      var res = await httpEither.put(
+      var res = await httpEither.put<Map<String, dynamic>>(
         path,
-        uploadedData,
+        data: uploadedData,
         showLog: true,
       );
 
