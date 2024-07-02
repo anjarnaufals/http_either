@@ -76,4 +76,9 @@ class HttpLogEncoder {
     }
     return result;
   }
+
+  void prettyErrorLog(dynamic message, StackTrace trace) => logger.e(
+        message,
+        stackTrace: trace,
+      );
 }

@@ -14,10 +14,11 @@ part 'http_status_code.dart';
 class HttpEither with HttpCommonRequest {
   HttpEither({
     required this.baseUrl,
-    this.headers,
+    required this.headers,
+    required http.Client client,
   }) {
     _client = RetryClient(
-      http.Client(),
+      client,
     );
   }
 
@@ -78,8 +79,8 @@ class HttpEither with HttpCommonRequest {
 
   @override
   Future<Either<ApiException, dynamic>> head<T>(
-    String url,
-    T? data, {
+    String url, {
+    T? data,
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -104,8 +105,8 @@ class HttpEither with HttpCommonRequest {
 
   @override
   Future<Either<ApiException, dynamic>> patch<T>(
-    String url,
-    T? data, {
+    String url, {
+    T? data,
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -220,7 +221,7 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: _internalSeverErrorMap,
+              res: _internalSeverErrorMap,
             ),
           );
 
@@ -229,7 +230,7 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: _notImplementedMap,
+              res: _notImplementedMap,
             ),
           );
 
@@ -238,27 +239,36 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              data: response?.body ?? _somethingErrorMap,
+              res: jsonDecode(response?.body ?? '') ?? _somethingErrorMap,
             ),
           );
       }
-    } on SocketException catch (e) {
+    } on SocketException catch (e, trace) {
+      if (showLog) {
+        HttpLogEncoder().prettyErrorLog(e.message, trace);
+      }
+
       return Left(
         ApiException(
           message: e.message,
         ),
       );
-    } on FormatException catch (e) {
+    } on FormatException catch (e, trace) {
+      if (showLog) {
+        HttpLogEncoder().prettyErrorLog(e.message, trace);
+      }
       return Left(
         ApiException(
           message: e.message,
         ),
       );
-    } on Exception catch (e, t) {
+    } on Exception catch (e, trace) {
+      if (showLog) {
+        HttpLogEncoder().prettyErrorLog(e.toString(), trace);
+      }
       return Left(
         ApiException(
-          message:
-              '<----Exception----> \n ${e.toString()} \n\n <----Trace----> \n ${t.toString()}',
+          message: 'Something Wrong',
         ),
       );
     } finally {
