@@ -11,18 +11,27 @@ part 'http_common_request.dart';
 part 'http_log_encoder.dart';
 part 'http_status_code.dart';
 
+///[HttpEither]
+/// A base class Dio Either Package
 class HttpEither with HttpCommonRequest {
+  ///[HttpEither]
+  /// default constructor
   HttpEither({
     required this.baseUrl,
     required this.headers,
     required http.Client client,
+    int retriesAttempt = 3,
   }) {
     _client = RetryClient(
       client,
+      retries: retriesAttempt,
     );
   }
 
+  /// baseUrl
   final String baseUrl;
+
+  ///headers
   final Map<String, String>? headers;
 
   late final RetryClient _client;
@@ -79,8 +88,8 @@ class HttpEither with HttpCommonRequest {
 
   @override
   Future<Either<ApiException, dynamic>> head<T>(
-    String url, {
-    T? data,
+    String url,
+    T? data, {
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -105,8 +114,8 @@ class HttpEither with HttpCommonRequest {
 
   @override
   Future<Either<ApiException, dynamic>> patch<T>(
-    String url, {
-    T? data,
+    String url,
+    T? data, {
     Map<String, dynamic>? query,
     showLog = false,
     useHttps = true,
@@ -211,26 +220,26 @@ class HttpEither with HttpCommonRequest {
       });
 
       switch (response?.statusCode) {
-        case HttpStatusCodes.ok:
+        case HttpStatusCode.ok:
           return Right(
             jsonDecode(response?.body ?? ''),
           );
 
-        case HttpStatusCodes.internalServerError:
+        case HttpStatusCode.internalServerError:
           return Left(
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              res: _internalSeverErrorMap,
+              response: _internalSeverErrorMap,
             ),
           );
 
-        case HttpStatusCodes.notImplemented:
+        case HttpStatusCode.notImplemented:
           return Left(
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              res: _notImplementedMap,
+              response: _notImplementedMap,
             ),
           );
 
@@ -239,7 +248,7 @@ class HttpEither with HttpCommonRequest {
             ApiException(
               code: response?.statusCode,
               message: response?.reasonPhrase,
-              res: jsonDecode(response?.body ?? '') ?? _somethingErrorMap,
+              response: jsonDecode(response?.body ?? '') ?? _somethingErrorMap,
             ),
           );
       }

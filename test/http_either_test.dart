@@ -55,8 +55,6 @@ void main() {
     // testing.MockClient mockPATCHsuccess;
     // testing.MockClient mockPATCHfailure;
 
-    setUp(() {});
-
     test('GET method success', () async {
       final HttpEither httpEither = HttpEither(
         baseUrl: baseUrl,
@@ -93,7 +91,7 @@ void main() {
       dynamic eitherFailure;
 
       if (res.isLeft) {
-        eitherFailure = res.left.res;
+        eitherFailure = res.left.response;
       }
 
       expect(eitherFailure, failureResponse);
@@ -137,7 +135,7 @@ void main() {
       dynamic eitherFailure;
 
       if (res.isLeft) {
-        eitherFailure = res.left.res;
+        eitherFailure = res.left.response;
       }
 
       expect(eitherFailure, failureResponse);
@@ -179,7 +177,7 @@ void main() {
       dynamic eitherFailure;
 
       if (res.isLeft) {
-        eitherFailure = res.left.res;
+        eitherFailure = res.left.response;
       }
 
       expect(eitherFailure, failureResponse);
@@ -223,7 +221,7 @@ void main() {
       dynamic eitherFailure;
 
       if (res.isLeft) {
-        eitherFailure = res.left.res;
+        eitherFailure = res.left.response;
       }
 
       expect(eitherFailure, failureResponse);
@@ -237,6 +235,7 @@ void main() {
 
       var res = await httpEither.head(
         path,
+        {},
         showLog: true,
       );
 
@@ -258,13 +257,14 @@ void main() {
 
       var res = await httpEither.head(
         path,
+        {},
         showLog: true,
       );
 
       dynamic eitherFailure;
 
       if (res.isLeft) {
-        eitherFailure = res.left.res;
+        eitherFailure = res.left.response;
       }
 
       expect(eitherFailure, failureResponse);

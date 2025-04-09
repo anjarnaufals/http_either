@@ -1,8 +1,11 @@
-part of 'http_either_base.dart';
+part of 'http_either.dart';
 
+/// HttpLogEncoder base class
+///
 class HttpLogEncoder {
   HttpLogEncoder._();
 
+  ///constructor factory for HttpLogEncoder
   factory HttpLogEncoder() {
     return HttpLogEncoder._();
   }
@@ -17,6 +20,7 @@ class HttpLogEncoder {
     ),
   );
 
+  /// function for logging
   void prettyLogJson(
     int statusCode,
     String? path,
@@ -77,6 +81,7 @@ class HttpLogEncoder {
     return result;
   }
 
+  /// function for print error log
   void prettyErrorLog(dynamic message, StackTrace trace) => logger.e(
         message,
         stackTrace: trace,

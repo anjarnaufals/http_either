@@ -3,7 +3,7 @@
 /// More dartdocs go here.
 library;
 
-export 'src/http_either_base.dart';
+export 'src/http_either.dart';
 export 'src/safety_cast.dart';
 
 

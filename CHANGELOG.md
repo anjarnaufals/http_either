@@ -1,3 +1,10 @@
+## 1.0.4
+
+- add analyzer dart_code_metrics
+- update example
+- add frontend_server_client to dev dependencies
+- upgrade test library version
+
 ## 1.0.3
 
 - Add logging stacktrace on safety cast function
@@ -11,6 +18,7 @@
 - Update sdk minimum version.
 
 # 1.0.1
+
 - Add type to all parameter and become required
 - Add new parameter http client for moking
 - Add test mocking http_either
